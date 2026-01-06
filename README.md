@@ -6,6 +6,8 @@ Sistem kontrol LED WS2812B berbasis ESP32/ESP8266 dengan antarmuka web yang eleg
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-ESP32%20%7C%20ESP8266-green.svg)
 
+<img width="500px" height="auto" alt="FireShot Capture 124 - ⚡ Wand Light Control - " src="https://github.com/user-attachments/assets/2e592014-7dc6-41c0-be8b-0606b0e5eb40" />
+
 ## ✨ Fitur
 
 - 🎨 **Color Picker Intuitif** - Pilih warna dengan HSV color picker
