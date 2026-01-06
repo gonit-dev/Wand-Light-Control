@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Wand Light Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-picker-container {
+            display: grid;
+            grid-template-columns: 1fr 50px 1fr;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .color-square {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(to right, white, hsl(200, 100%, 50%));
+            border-radius: 8px;
+            cursor: crosshair;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-square::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent, black);
+            border-radius: 8px;
+        }
+
+        .color-picker-dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 3px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+
+        .hue-slider {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 10px;
+        }
+
+        .hue-bar {
+            flex: 1;
+            background: linear-gradient(to bottom, 
+                hsl(0, 100%, 50%),
+                hsl(60, 100%, 50%),
+                hsl(120, 100%, 50%),
+                hsl(180, 100%, 50%),
+                hsl(240, 100%, 50%),
+                hsl(300, 100%, 50%),
+                hsl(0, 100%, 50%)
+            );
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .hue-slider-thumb {
+            position: absolute;
+            width: 100%;
+            height: 8px;
+            border: 2px solid white;
+            border-radius: 4px;
+            left: 0;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+
+        .color-comparison {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .color-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .color-box-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .color-box-display {
+            width: 100%;
+            height: 80px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 2px solid #e0e0e0;
+        }
+
+        .rgb-section {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .rgb-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .rgb-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .rgb-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .rgb-input-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .rgb-input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: bold;
+            transition: border-color 0.3s;
+        }
+
+        .rgb-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .hex-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .hex-input-wrapper {
+            flex: 1;
+        }
+
+        .hex-input-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .hex-input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            transition: border-color 0.3s;
+        }
+
+        .hex-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-ok {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-ok:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #d0d0d0;
+        }
+
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .preset-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .preset-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .preset-btn:active {
+            transform: scale(0.95);
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .status.success {
+            color: #27ae60;
+            background: #d5f4e6;
+        }
+
+        .status.error {
+            color: #e74c3c;
+            background: #fadbd8;
+        }
+
+        @media (max-width: 768px) {
+            .color-picker-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .hue-slider {
+                flex-direction: row;
+                height: 40px;
+            }
+
+            .hue-bar {
+                flex: 1;
+            }
+
+            .rgb-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .presets {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .rgb-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .presets {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Wand Light Control</h1>
+
+        <div class="color-picker-container">
+            <!-- Color Square -->
+            <div class="color-square" id="colorSquare">
+                <div class="color-picker-dot" id="colorPickerDot"></div>
+            </div>
+
+            <!-- Hue Slider -->
+            <div class="hue-slider">
+                <div class="hue-bar" id="hueBar">
+                    <div class="hue-slider-thumb" id="hueThumb"></div>
+                </div>
+            </div>
+
+            <!-- Color Comparison -->
+            <div class="color-comparison">
+                <div class="color-box">
+                    <div class="color-box-label">Current</div>
+                    <div class="color-box-display" id="currentColorBox"></div>
+                </div>
+                <div class="color-box">
+                    <div class="color-box-label">New</div>
+                    <div class="color-box-display" id="newColorBox"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RGB and HEX Inputs -->
+        <div class="rgb-section">
+            <h3>Color Values</h3>
+
+            <div class="rgb-grid">
+                <div class="rgb-input-group">
+                    <label for="redInput">R</label>
+                    <input type="number" id="redInput" min="0" max="255">
+                </div>
+                <div class="rgb-input-group">
+                    <label for="greenInput">G</label>
+                    <input type="number" id="greenInput" min="0" max="255">
+                </div>
+                <div class="rgb-input-group">
+                    <label for="blueInput">B</label>
+                    <input type="number" id="blueInput" min="0" max="255">
+                </div>
+            </div>
+
+            <div class="hex-input-group">
+                <div class="hex-input-wrapper">
+                    <label for="hexInput">#HEX</label>
+                    <input type="text" id="hexInput" placeholder="3399CC" maxlength="6">
+                </div>
+            </div>
+        </div>
+
+        <!-- Spell Presets -->
+        <div>
+            <h3 style="margin-top: 30px; margin-bottom: 15px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">Spell Presets</h3>
+            <div class="presets">
+                <button class="preset-btn" style="background: rgb(255, 200, 80);" data-r="255" data-g="200" data-b="80" title="Lumos">Lumos</button>
+                <button class="preset-btn" style="background: rgb(200, 230, 255);" data-r="200" data-g="230" data-b="255" title="Patronum">Patronum</button>
+                <button class="preset-btn" style="background: rgb(255, 100, 0);" data-r="255" data-g="100" data-b="0" title="Stupefy">Stupefy</button>
+                <button class="preset-btn" style="background: rgb(0, 255, 80);" data-r="0" data-g="255" data-b="80" title="Avada">Avada</button>
+                <button class="preset-btn" style="background: rgb(200, 0, 255);" data-r="200" data-g="0" data-b="255" title="Crucio">Crucio</button>
+                <button class="preset-btn" style="background: rgb(100, 150, 255);" data-r="100" data-g="150" data-b="255" title="Protego">Protego</button>
+                <button class="preset-btn" style="background: rgb(255, 220, 0);" data-r="255" data-g="220" data-b="0" title="Expell">Expell</button>
+                <button class="preset-btn" style="background: rgb(255, 50, 0);" data-r="255" data-g="50" data-b="0" title="Diffindo">Diffindo</button>
+                <button class="preset-btn" style="background: rgb(255, 255, 255); color: #333;" data-r="255" data-g="255" data-b="255" title="White">White</button>
+                <button class="preset-btn" style="background: rgb(255, 0, 0);" data-r="255" data-g="0" data-b="0" title="Red">Red</button>
+                <button class="preset-btn" style="background: rgb(0, 255, 0);" data-r="0" data-g="255" data-b="0" title="Green">Green</button>
+                <button class="preset-btn" style="background: rgb(0, 0, 255);" data-r="0" data-g="0" data-b="255" title="Blue">Blue</button>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-ok">OK</button>
+            <button class="btn-cancel">Cancel</button>
+        </div>
+
+        <div class="status" id="status">Ready</div>
+    </div>
+
+    <script>
+        const colorSquare = document.getElementById('colorSquare');
+        const colorPickerDot = document.getElementById('colorPickerDot');
+        const hueBar = document.getElementById('hueBar');
+        const hueThumb = document.getElementById('hueThumb');
+        const redInput = document.getElementById('redInput');
+        const greenInput = document.getElementById('greenInput');
+        const blueInput = document.getElementById('blueInput');
+        const hexInput = document.getElementById('hexInput');
+        const currentColorBox = document.getElementById('currentColorBox');
+        const newColorBox = document.getElementById('newColorBox');
+        const status = document.getElementById('status');
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        const okBtn = document.querySelector('.btn-ok');
+        const cancelBtn = document.querySelector('.btn-cancel');
+
+        let currentHue = 200;
+        let currentSaturation = 100;
+        let currentValue = 50;
+
+        // Load initial color
+        loadColor();
+
+        // Event listeners
+        colorSquare.addEventListener('click', handleColorSquareClick);
+        colorSquare.addEventListener('mousemove', (e) => {
+            if (e.buttons === 1) handleColorSquareClick(e);
+        });
+        hueBar.addEventListener('click', handleHueBarClick);
+        hueBar.addEventListener('mousemove', (e) => {
+            if (e.buttons === 1) handleHueBarClick(e);
+        });
+
+        redInput.addEventListener('input', handleRGBChange);
+        greenInput.addEventListener('input', handleRGBChange);
+        blueInput.addEventListener('input', handleRGBChange);
+        hexInput.addEventListener('input', handleHexChange);
+
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const r = parseInt(btn.dataset.r);
+                const g = parseInt(btn.dataset.g);
+                const b = parseInt(btn.dataset.b);
+                setColorFromRGB(r, g, b);
+            });
+        });
+
+        okBtn.addEventListener('click', sendColor);
+        cancelBtn.addEventListener('click', loadColor);
+
+        function handleColorSquareClick(e) {
+            const rect = colorSquare.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const saturation = (x / rect.width) * 100;
+            const value = 100 - (y / rect.height) * 100;
+
+            currentSaturation = Math.max(0, Math.min(100, saturation));
+            currentValue = Math.max(0, Math.min(100, value));
+
+            updateColorDisplay();
+        }
+
+        function handleHueBarClick(e) {
+            const rect = hueBar.getBoundingClientRect();
+            const y = e.clientY - rect.top;
+            const hue = (y / rect.height) * 360;
+            currentHue = Math.max(0, Math.min(360, hue));
+            updateColorDisplay();
+        }
+
+        function handleRGBChange() {
+            const r = parseInt(redInput.value) || 0;
+            const g = parseInt(greenInput.value) || 0;
+            const b = parseInt(blueInput.value) || 0;
+
+            if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255) {
+                setColorFromRGB(r, g, b);
+            }
+        }
+
+        function handleHexChange() {
+            const hex = hexInput.value.replace('#', '');
+            if (hex.length === 6 && /^[0-9A-Fa-f]{6}$/.test(hex)) {
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                setColorFromRGB(r, g, b);
+            }
+        }
+
+        function setColorFromRGB(r, g, b) {
+            const hsv = rgbToHsv(r, g, b);
+            currentHue = hsv.h;
+            currentSaturation = hsv.s;
+            currentValue = hsv.v;
+            updateColorDisplay();
+        }
+
+        function updateColorDisplay() {
+            const rgb = hsvToRgb(currentHue, currentSaturation, currentValue);
+            const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+            // Update inputs
+            redInput.value = rgb.r;
+            greenInput.value = rgb.g;
+            blueInput.value = rgb.b;
+            hexInput.value = hex.substring(1);
+
+            // Update color square gradient
+            const hslColor = `hsl(${currentHue}, 100%, 50%)`;
+            colorSquare.style.background = `linear-gradient(to right, white, ${hslColor})`;
+
+            // Update picker dot position
+            const satPercent = currentSaturation;
+            const valPercent = 100 - currentValue;
+            colorPickerDot.style.left = satPercent + '%';
+            colorPickerDot.style.top = valPercent + '%';
+
+            // Update hue slider position
+            const huePercent = (currentHue / 360) * 100;
+            hueThumb.style.top = huePercent + '%';
+
+            // Update color boxes
+            const colorString = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+            newColorBox.style.backgroundColor = colorString;
+        }
+
+        function sendColor() {
+            const rgb = hsvToRgb(currentHue, currentSaturation, currentValue);
+            const data = { r: rgb.r, g: rgb.g, b: rgb.b };
+
+            fetch('/api/color', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus('Saved ✓', 'success');
+                    loadColor();
+                } else {
+                    showStatus('Error!', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showStatus('Connection error', 'error');
+            });
+        }
+
+        function loadColor() {
+            fetch('/api/color')
+                .then(response => response.json())
+                .then(data => {
+                    setColorFromRGB(data.r, data.g, data.b);
+                    currentColorBox.style.backgroundColor = `rgb(${data.r}, ${data.g}, ${data.b})`;
+                })
+                .catch(error => console.error('Error loading color:', error));
+        }
+
+        function showStatus(message, type = '') {
+            status.textContent = message;
+            status.className = 'status ' + type;
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    status.textContent = 'Ready';
+                    status.className = 'status';
+                }, 2000);
+            }
+        }
+
+        // Color conversion utilities
+        function hsvToRgb(h, s, v) {
+            h = h % 360;
+            s = s / 100;
+            v = v / 100;
+
+            const c = v * s;
+            const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+            const m = v - c;
+
+            let r, g, b;
+            if (h >= 0 && h < 60) [r, g, b] = [c, x, 0];
+            else if (h >= 60 && h < 120) [r, g, b] = [x, c, 0];
+            else if (h >= 120 && h < 180) [r, g, b] = [0, c, x];
+            else if (h >= 180 && h < 240) [r, g, b] = [0, x, c];
+            else if (h >= 240 && h < 300) [r, g, b] = [x, 0, c];
+            else [r, g, b] = [c, 0, x];
+
+            return {
+                r: Math.round((r + m) * 255),
+                g: Math.round((g + m) * 255),
+                b: Math.round((b + m) * 255)
+            };
+        }
+
+        function rgbToHsv(r, g, b) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            const d = max - min;
+
+            let h;
+            if (max === min) h = 0;
+            else if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+            else if (max === g) h = ((b - r) / d + 2) / 6;
+            else h = ((r - g) / d + 4) / 6;
+
+            const s = max === 0 ? 0 : d / max;
+            const v = max;
+
+            return {
+                h: h * 360,
+                s: s * 100,
+                v: v * 100
+            };
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + [r, g, b].map(x => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? "0" + hex : hex;
+            }).join('').toUpperCase();
+        }
+
+        // Initialize
+        updateColorDisplay();
+    </script>
+</body>
+</html>
